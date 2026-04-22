@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AfriScholar • Find Your Path</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOADING SCREEN (always shows first)
+══════════════════════════════════════ -->
+<div id="loadingScreen" class="loading-screen">
+    <div class="loading-inner">
+        <svg viewBox="0 0 38 44" fill="none" width="52" height="62">
+            <path d="M19 2C13 2 6 8 6 16C6 20 8 23 11 25.5C8.5 25 7 23 7 20C7 26 12 30 19 30C26 30 31 26 31 20C31 23 29.5 25 27 25.5C30 23 32 20 32 16C32 8 25 2 19 2Z" fill="#1e3a2e"/>
+            <path d="M19 18C15 18 11 21 10 25C12 23.5 15 22.5 19 22.5C23 22.5 26 23.5 28 25C27 21 23 18 19 18Z" fill="#2a5040" opacity="0.75"/>
+            <rect x="17" y="30" width="4" height="12" rx="2" fill="#1e3a2e"/>
+        </svg>
+        <span class="loading-brand">AfriScholar</span>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     AUTH WALL (shown when logged out)
+══════════════════════════════════════ -->
+<div id="authWall" class="auth-wall hidden">
+    <div class="auth-box">
+        <div class="auth-logo">
+            <svg viewBox="0 0 38 44" fill="none" width="34" height="40">
+                <path d="M19 2C13 2 6 8 6 16C6 20 8 23 11 25.5C8.5 25 7 23 7 20C7 26 12 30 19 30C26 30 31 26 31 20C31 23 29.5 25 27 25.5C30 23 32 20 32 16C32 8 25 2 19 2Z" fill="#1e3a2e"/>
+                <path d="M19 18C15 18 11 21 10 25C12 23.5 15 22.5 19 22.5C23 22.5 26 23.5 28 25C27 21 23 18 19 18Z" fill="#2a5040" opacity="0.75"/>
+                <rect x="17" y="30" width="4" height="12" rx="2" fill="#1e3a2e"/>
+            </svg>
+            <span>AfriScholar</span>
+        </div>
+
+        <h2 class="auth-heading">Your scholarship path starts here.</h2>
+        <p class="auth-sub">Sign in with your email to get your personal AI match score, save universities, and track your applications — completely free.</p>
+
+        <!-- Magic link form -->
+        <div id="magicFormWrap">
+            <input type="email" id="magicEmail" class="magic-input" placeholder="Enter your email address" autocomplete="email">
+            <button id="magicSendBtn" class="btn magic-btn">
+                <i class="fa-solid fa-paper-plane"></i> Send me a login link
+            </button>
+        </div>
+
+        <div id="magicSent" class="magic-sent hidden">
+            <i class="fa-solid fa-envelope-circle-check"></i>
+            <div>
+                <strong>Check your inbox!</strong><br>
+                We sent a login link to <strong id="magicEmailDisplay"></strong>.<br>
+                <span class="magic-hint">Click the link in the email to sign in. It expires in 1 hour.</span>
+            </div>
+        </div>
+
+        <p class="auth-footer-note">No password needed. No spam. Just a secure one-click login link.</p>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SURVEY MODAL
+══════════════════════════════════════ -->
+<div id="surveyModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <div class="survey-progress">
+            <div class="survey-progress-bar" id="surveyProgressBar"></div>
+        </div>
+        <div class="survey-header">
+            <span class="survey-step-label" id="surveyStepLabel">Step 1 of 5</span>
+            <button class="survey-skip-btn" id="surveySkipBtn">Skip for now</button>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="survey-step active" data-step="1">
+            <div class="survey-icon">📚</div>
+            <h3 class="survey-title">Tell us about your academics</h3>
+            <p class="survey-desc">Be honest — your score reflects reality, not what you wish for.</p>
+            <div class="survey-fields">
+                <div class="sfield">
+                    <label>What level are you currently at?</label>
+                    <select id="s_gradeLevel">
+                        <option value="">Select level...</option>
+                        <option value="O-Level">O-Level / IGCSE</option>
+                        <option value="A-Level">A-Level / AS-Level</option>
+                        <option value="Diploma">Diploma / Certificate</option>
+                        <option value="Undergraduate">Undergraduate Degree</option>
+                    </select>
+                </div>
+                <div class="sfield">
+                    <label>Overall average grade (%)</label>
+                    <input type="number" id="s_gradeAverage" min="0" max="100" placeholder="e.g. 78">
+                </div>
+                <div class="sfield">
+                    <label>Subjects you're studying <span class="sfield-hint">(comma-separated)</span></label>
+                    <input type="text" id="s_subjects" placeholder="e.g. Mathematics, Physics, English">
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="survey-step" data-step="2">
+            <div class="survey-icon">🎯</div>
+            <h3 class="survey-title">What are you aiming for?</h3>
+            <p class="survey-desc">Your goals shape which opportunities are most relevant.</p>
+            <div class="survey-fields">
+                <div class="sfield">
+                    <label>What do you want to study?</label>
+                    <select id="s_targetField">
+                        <option value="">Select a field...</option>
+                        <option>Engineering</option>
+                        <option>Computer Science / IT</option>
+                        <option>Medicine / Health Sciences</option>
+                        <option>Business / Finance</option>
+                        <option>Law</option>
+                        <option>Architecture</option>
+                        <option>Agriculture / Environmental Science</option>
+                        <option>Arts / Humanities</option>
+                        <option>Natural Sciences</option>
+                        <option>Not sure yet</option>
+                    </select>
+                </div>
+                <div class="sfield">
+                    <label>Degree level</label>
+                    <select id="s_targetDegree">
+                        <option value="">Select...</option>
+                        <option value="Undergraduate">Undergraduate (Bachelor's)</option>
+                        <option value="Masters">Master's degree</option>
+                        <option value="PhD">PhD / Doctorate</option>
+                    </select>
+                </div>
+                <div class="sfield">
+                    <label>Countries you'd consider <span class="sfield-hint">(comma-separated)</span></label>
+                    <input type="text" id="s_targetCountries" placeholder="e.g. Germany, UK, Singapore, Canada">
+                </div>
+                <div class="sfield">
+                    <label>When do you plan to start?</label>
+                    <select id="s_intendedStart">
+                        <option value="">Select year...</option>
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                        <option value="2028">2028 or later</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="survey-step" data-step="3">
+            <div class="survey-icon">🌐</div>
+            <h3 class="survey-title">English test status</h3>
+            <p class="survey-desc">This significantly impacts your available options.</p>
+            <div class="survey-fields">
+                <div class="sfield">
+                    <label>Which English test have you taken or plan to take?</label>
+                    <select id="s_englishTest">
+                        <option value="">Select...</option>
+                        <option value="IELTS">IELTS</option>
+                        <option value="TOEFL">TOEFL</option>
+                        <option value="Duolingo">Duolingo English Test</option>
+                        <option value="Cambridge">Cambridge (C1/C2)</option>
+                        <option value="None">Haven't taken any yet</option>
+                    </select>
+                </div>
+                <div class="sfield hidden" id="s_scoreField">
+                    <label>Your score</label>
+                    <input type="text" id="s_englishScore" placeholder="e.g. 6.5 for IELTS, 115 for Duolingo">
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="survey-step" data-step="4">
+            <div class="survey-icon">⭐</div>
+            <h3 class="survey-title">Your profile beyond grades</h3>
+            <p class="survey-desc">Be specific — a science fair winner with 70% can outrank someone with 85% who did nothing extra.</p>
+            <div class="survey-fields">
+                <div class="sfield">
+                    <label>Extracurricular activities</label>
+                    <textarea id="s_extracurriculars" rows="2" placeholder="e.g. School football captain, chess club, coding club..."></textarea>
+                </div>
+                <div class="sfield">
+                    <label>Awards & achievements</label>
+                    <textarea id="s_awards" rows="2" placeholder="e.g. National Science Fair 2nd place, top student in district..."></textarea>
+                </div>
+                <div class="sfield">
+                    <label>Leadership or community roles</label>
+                    <textarea id="s_leadership" rows="2" placeholder="e.g. School prefect, class president, youth leader..."></textarea>
+                </div>
+                <div class="sfield">
+                    <label>Volunteer or work experience <span class="sfield-hint">(optional)</span></label>
+                    <textarea id="s_volunteer" rows="2" placeholder="e.g. Volunteered at local clinic, coding tutor..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="survey-step" data-step="5">
+            <div class="survey-icon">💰</div>
+            <h3 class="survey-title">Funding situation</h3>
+            <p class="survey-desc">This helps us prioritise the most critical scholarships for you.</p>
+            <div class="survey-fields">
+                <div class="sfield">
+                    <label>What level of financial support do you need?</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="financialNeed" value="Full funding required">
+                            <span><strong>Full funding required</strong> — I cannot attend without a full scholarship</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="financialNeed" value="Partial OK">
+                            <span><strong>Partial is okay</strong> — I can cover some costs myself</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="financialNeed" value="Self-funded">
+                            <span><strong>Self-funded</strong> — scholarships are a bonus, not a requirement</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="survey-ai-note">
+                <i class="fa-solid fa-sparkles"></i>
+                Our AI will analyse your full profile and return a personalised score out of 100 with specific advice on how to improve it.
+            </div>
+        </div>
+
+        <div class="survey-nav">
+            <button class="btn btn-outline" id="surveyPrevBtn" style="visibility:hidden">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </button>
+            <button class="btn" id="surveyNextBtn">
+                Next <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN APP (shown when logged in)
+══════════════════════════════════════ -->
+<div id="mainApp" class="hidden">
+<div class="app-wrapper">
+
+    <header class="main-header">
+        <div class="logo-area" onclick="showSection('home')">
+            <div class="logo-mark">
+                <svg class="tree-svg" viewBox="0 0 38 44" fill="none">
+                    <path d="M19 2C13 2 6 8 6 16C6 20 8 23 11 25.5C8.5 25 7 23 7 20C7 26 12 30 19 30C26 30 31 26 31 20C31 23 29.5 25 27 25.5C30 23 32 20 32 16C32 8 25 2 19 2Z" fill="#1e3a2e"/>
+                    <path d="M19 18C15 18 11 21 10 25C12 23.5 15 22.5 19 22.5C23 22.5 26 23.5 28 25C27 21 23 18 19 18Z" fill="#2a5040" opacity="0.75"/>
+                    <rect x="17" y="30" width="4" height="12" rx="2" fill="#1e3a2e"/>
+                </svg>
+                <span class="logo-text">AfriScholar</span>
+            </div>
+            <div class="tagline">Scholarship discovery for African students</div>
+        </div>
+
+        <nav class="nav-links">
+            <a class="nav-item active" data-section="home">Home</a>
+            <a class="nav-item" data-section="search">Search</a>
+            <a class="nav-item" data-section="dashboard">Dashboard</a>
+            <a class="nav-item" data-section="about">About</a>
+        </nav>
+
+        <div class="header-user">
+            <img id="userAvatar" class="user-avatar" src="" alt="Profile">
+            <div class="user-info">
+                <span id="userName" class="user-name"></span>
+                <button id="signOutBtn" class="sign-out-btn">Sign out</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HOME -->
+    <section id="home" class="page-section active">
+        <div class="hero-card">
+            <div class="hero-eyebrow"><span class="eyebrow-dot"></span> Built for African students</div>
+            <h1 class="hero-heading">Your scholarship opportunity exists.<br><em>Let us help you find it.</em></h1>
+            <p class="hero-body">Every year, thousands of deserving African students miss life-changing university placements — not because they lack ability, but because the right information isn't accessible. AfriScholar changes that.</p>
+            <div class="hero-actions">
+                <button class="btn btn-hero" onclick="showSection('search')">
+                    <i class="fa-solid fa-magnifying-glass"></i> Find scholarships
+                </button>
+                <button class="btn btn-ghost" onclick="showSection('dashboard')">
+                    My dashboard
+                </button>
+            </div>
+        </div>
+        <div class="section-label">Featured opportunities</div>
+        <div class="uni-grid" id="homeFeaturedUnis"></div>
+    </section>
+
+    <!-- SEARCH -->
+    <section id="search" class="page-section">
+        <div class="page-header">
+            <h2>Find your scholarship</h2>
+            <p>Results ranked by match score based on your profile.</p>
+        </div>
+        <div class="profile-card">
+            <div class="profile-header">
+                <div>
+                    <div class="profile-title">Your academic profile</div>
+                    <div class="profile-subtitle">Adjust to see how match scores change.</div>
+                </div>
+                <button id="updateMatchBtn" class="btn btn-small btn-outline">
+                    <i class="fa-solid fa-arrows-rotate"></i> Update
+                </button>
+            </div>
+            <div class="profile-fields">
+                <div class="field-group">
+                    <label for="profileGrade">Grade average</label>
+                    <select id="profileGrade">
+                        <option value="85">85%+ (A grade)</option>
+                        <option value="75" selected>75–84% (B grade)</option>
+                        <option value="65">65–74% (C grade)</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label for="profileExtra">Extracurriculars</label>
+                    <select id="profileExtra">
+                        <option value="strong" selected>Strong — leadership or sport</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="light">Light</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label for="profileEnglish">English qualification</label>
+                    <select id="profileEnglish">
+                        <option value="duolingo" selected>Duolingo 120+</option>
+                        <option value="ielts">IELTS 6.5+</option>
+                        <option value="none">Yet to write</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="card filter-card">
+            <div class="filter-card-label">Filters</div>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label>Country</label>
+                    <select id="filterCountry">
+                        <option value="all">All countries</option>
+                        <option value="usa">United States</option>
+                        <option value="uk">United Kingdom</option>
+                        <option value="canada">Canada</option>
+                        <option value="southafrica">South Africa</option>
+                        <option value="ghana">Ghana</option>
+                        <option value="zimbabwe">Zimbabwe</option>
+                        <option value="rwanda">Rwanda</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Field of study</label>
+                    <select id="filterField">
+                        <option value="all">All fields</option>
+                        <option value="cs">Computer Science</option>
+                        <option value="eng">Engineering</option>
+                        <option value="bus">Business</option>
+                        <option value="med">Medicine</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Min funding</label>
+                    <select id="filterFunding">
+                        <option value="0">Any amount</option>
+                        <option value="50">50%+</option>
+                        <option value="80">80%+</option>
+                        <option value="100">Fully funded</option>
+                    </select>
+                </div>
+                <div class="filter-item checkbox-group">
+                    <input type="checkbox" id="filterDuolingo">
+                    <label for="filterDuolingo">Duolingo accepted</label>
+                </div>
+                <button id="applyFiltersBtn" class="btn btn-small">
+                    <i class="fa-solid fa-filter"></i> Apply
+                </button>
+            </div>
+        </div>
+        <div class="results-meta" id="resultsMeta"></div>
+        <div id="resultsContainer" class="uni-grid"></div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="page-section">
+        <div class="page-header"><h2>My Dashboard</h2></div>
+
+        <div class="score-section">
+            <div class="score-ring-wrap">
+                <svg class="score-ring-svg" viewBox="0 0 200 200">
+                    <circle class="ring-track" cx="100" cy="100" r="80"/>
+                    <circle class="ring-fill" cx="100" cy="100" r="80" id="ringFill"/>
+                </svg>
+                <div class="score-center">
+                    <span class="score-number" id="scoreNumber">—</span>
+                    <span class="score-label">Match Score</span>
+                </div>
+            </div>
+            <div class="score-right">
+                <div id="scoreBreakdown" class="score-breakdown"></div>
+                <div id="scoreFeedback" class="score-feedback"></div>
+                <div id="scoreActions" class="score-actions"></div>
+            </div>
+        </div>
+
+        <div class="no-survey-banner hidden" id="noSurveyBanner">
+            <div class="nsb-icon"><i class="fa-solid fa-chart-pie"></i></div>
+            <div>
+                <strong>Get your personalised match score</strong>
+                <p>Complete a 5-step survey and our AI will analyse your profile.</p>
+            </div>
+            <button class="btn btn-small" onclick="openSurvey()">
+                <i class="fa-solid fa-sparkles"></i> Take the survey
+            </button>
+        </div>
+
+        <div class="card" style="margin-top:24px">
+            <div class="dashboard-header">
+                <div class="card-title"><i class="fa-regular fa-bookmark"></i> Saved universities</div>
+                <button id="clearSavedBtn" class="btn-danger-text">
+                    <i class="fa-regular fa-trash-can"></i> Clear all
+                </button>
+            </div>
+            <div id="savedContainer">
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+                    <p>Nothing saved yet.</p>
+                    <p class="empty-hint">Go to Search and click <strong>Save</strong> on any result.</p>
+                    <button class="btn btn-small btn-outline" style="margin-top:14px" onclick="showSection('search')">Browse scholarships</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card coming-soon-card">
+            <div class="coming-soon-inner">
+                <div class="coming-icon"><i class="fa-regular fa-calendar-check"></i></div>
+                <div>
+                    <div class="card-title">Application tracker</div>
+                    <div class="card-sub">Deadlines, documents, submission status — coming soon.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="page-section">
+        <div class="page-header"><h2>About AfriScholar</h2></div>
+        <div class="card about-card">
+            <p class="about-intro">AfriScholar was built because too many capable, ambitious African students miss out on global university opportunities — not from a lack of merit, but a lack of access.</p>
+            <p class="about-body">This platform brings verified scholarship listings, AI-powered match scores, and step-by-step clarity into one free tool. No paywalls. No confusion.</p>
+            <div class="about-contact">
+                <div class="contact-label">Get in touch</div>
+                <div class="contact-links">
+                    <a href="mailto:wish.m@usapschool.org"><i class="fa-regular fa-envelope"></i> wish.m@usapschool.org</a>
+                    <a href="https://www.instagram.com/therealwishm/" target="_blank"><i class="fa-brands fa-instagram"></i> @therealwishm</a>
+                    <a href="https://wa.me/263786700947" target="_blank"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-brand">
+            <svg viewBox="0 0 38 44" fill="none" width="18" height="22">
+                <path d="M19 2C13 2 6 8 6 16C6 20 8 23 11 25.5C8.5 25 7 23 7 20C7 26 12 30 19 30C26 30 31 26 31 20C31 23 29.5 25 27 25.5C30 23 32 20 32 16C32 8 25 2 19 2Z" fill="#1e3a2e"/>
+                <rect x="17" y="30" width="4" height="12" rx="2" fill="#1e3a2e"/>
+            </svg>
+            <span>AfriScholar</span>
+        </div>
+        <div class="footer-copy">© 2025 AfriScholar · Free for every student</div>
+        <div class="footer-links">
+            <a href="mailto:wish.m@usapschool.org"><i class="fa-regular fa-envelope"></i> Email</a>
+            <a href="https://www.instagram.com/therealwishm/" target="_blank"><i class="fa-brands fa-instagram"></i> Instagram</a>
+            <a href="https://wa.me/263786700947" target="_blank"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+        </div>
+    </footer>
+
+</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
