@@ -2,6 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { allGuides } from "@/lib/learn";
 
+// THIS IS THE FIX FOR THE VERCEL BUILD ERROR:
+export function generateStaticParams() {
+  return allGuides.map((guide) => ({
+    id: guide.id,
+  }));
+}
+
 export default async function GuidePage({ params }: { params: Promise<{ id: string }> }) {
   // Get the ID from the URL
   const { id } = await params;
