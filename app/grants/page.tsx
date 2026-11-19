@@ -3,6 +3,9 @@ import { supabase } from "@/lib/supabase";
 import { GrantCard } from "@/components/grants/grant-card";
 import { Grant } from "@/lib/types";
 
+// ADD THIS LINE:
+export const dynamic = "force-dynamic";
+
 async function GrantList() {
   const { data: grants } = await supabase
     .from("grants")

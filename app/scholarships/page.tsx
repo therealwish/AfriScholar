@@ -5,7 +5,9 @@ import { ScholarshipCard } from "@/components/scholarships/scholarship-card";
 import { buttonStyles } from "@/components/ui/button";
 import { Scholarship } from "@/lib/types";
 
-// 1. Create the async component that fetches the data
+// ADD THIS LINE:
+export const dynamic = "force-dynamic";
+
 async function ScholarshipList() {
   const { data: scholarships } = await supabase
     .from("scholarships")
@@ -28,7 +30,6 @@ async function ScholarshipList() {
   );
 }
 
-// 2. The main page renders the static header and wraps the list in Suspense
 export default function ScholarshipsPage() {
   return (
     <div className="bg-paper min-h-screen pb-20">
@@ -54,7 +55,6 @@ export default function ScholarshipsPage() {
         </div>
       </div>
 
-      {/* 3. The Suspense Boundary */}
       <Suspense fallback={
         <div className="px-6 pt-12 text-center text-ink-soft">
           <p className="font-mono text-sm uppercase">Loading opportunities...</p>
