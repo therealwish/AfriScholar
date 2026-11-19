@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Grant } from "@/lib/data";
+import { Grant } from "@/lib/types"; // Fixed the import here!
 
 export function GrantCard({ grant }: { grant: Grant }) {
   return (
