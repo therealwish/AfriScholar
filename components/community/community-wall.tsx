@@ -5,13 +5,20 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 
+type Reply = {
+  id: string;
+  author_name: string;
+  content: string;
+};
+
 type Post = {
   id: string;
   author_name: string;
   location: string;
   content: string;
   created_at: string;
-  likes: number; // We'll keep likes local for now
+  likes: number;
+  replies: Reply[];
 };
 
 export function CommunityWall() {
@@ -21,56 +28,69 @@ export function CommunityWall() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch User and Posts on load
+  // Reply state
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+
   useEffect(() => {
     const fetchData = async () => {
-      // 1. Get User
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
 
-      // 2. Get Posts
+      // Fetch posts and their nested replies
       const { data } = await supabase
         .from("posts")
-        .select("*")
+        .select(`
+          *,
+          replies (*)
+        `)
         .order("created_at", { ascending: false });
         
-      if (data) setPosts(data.map(p => ({ ...p, likes: Math.floor(Math.random() * 10) }))); // Mocking likes for now
+      if (data) {
+        setPosts(data.map(p => ({ ...p, likes: Math.floor(Math.random() * 10) })));
+      }
       setLoading(false);
     };
     fetchData();
   }, []);
 
   const handlePost = async () => {
-    if (!newPost.trim()) return;
+    if (!newPost.trim() || !user) return;
 
-    if (!user) {
-      alert("Please log in to post.");
-      return;
-    }
-
-    // Get the name from the user metadata we saved during sign up
     const authorName = user.user_metadata?.full_name || "Anonymous Founder";
 
-    // Save to Database
     const { data, error } = await supabase
       .from("posts")
-      .insert([
-        { 
-          author_name: authorName, 
-          location: location, 
-          content: newPost 
-        }
-      ])
+      .insert([{ author_name: authorName, location, content: newPost }])
       .select()
       .single();
 
     if (!error && data) {
-      // Add the new post to the top of the feed instantly
-      setPosts([{ ...data, likes: 0 }, ...posts]);
+      setPosts([{ ...data, likes: 0, replies: [] }, ...posts]);
       setNewPost("");
-    } else {
-      console.error(error);
-      alert("Failed to post. Please try again.");
+    }
+  };
+
+  const handleReplySubmit = async (postId: string) => {
+    if (!replyText.trim() || !user) return;
+
+    const authorName = user.user_metadata?.full_name || "Anonymous Founder";
+
+    const { data, error } = await supabase
+      .from("replies")
+      .insert([{ post_id: postId, author_name: authorName, content: replyText }])
+      .select()
+      .single();
+
+    if (!error && data) {
+      setPosts(posts.map(p => {
+        if (p.id === postId) {
+          return { ...p, replies: [...p.replies, data] };
+        }
+        return p;
+      }));
+      setReplyText("");
+      setReplyingTo(null);
     }
   };
 
@@ -125,6 +145,7 @@ export function CommunityWall() {
         {posts.map((post) => (
           <div key={post.id} className="border-b-2 border-ink/10 pb-8">
             
+            {/* Post Header */}
             <div className="flex items-center gap-3 mb-3">
               <div className="h-8 w-8 bg-forest text-paper flex items-center justify-center font-display text-sm">
                 {post.author_name.charAt(0)}
@@ -137,21 +158,55 @@ export function CommunityWall() {
               </div>
             </div>
 
+            {/* Post Content */}
             <p className="text-lg text-ink leading-relaxed mb-4">
               {post.content}
             </p>
 
-            <div className="flex items-center gap-6">
-              <button 
-                onClick={() => handleLike(post.id)}
-                className="group flex items-center gap-2 text-sm text-ink-soft hover:text-forest transition-colors"
-              >
+            {/* Actions */}
+            <div className="flex items-center gap-6 mb-4">
+              <button onClick={() => handleLike(post.id)} className="group flex items-center gap-2 text-sm text-ink-soft hover:text-forest transition-colors">
                 <span className="font-mono">Like</span>
-                <span className="bg-ink/5 group-hover:bg-forest/10 px-2 py-0.5 rounded-xs font-mono text-xs">
-                  {post.likes}
-                </span>
+                <span className="bg-ink/5 group-hover:bg-forest/10 px-2 py-0.5 rounded-xs font-mono text-xs">{post.likes}</span>
+              </button>
+              
+              <button 
+                onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
+                disabled={!user}
+                className="text-sm text-ink-soft hover:text-forest transition-colors disabled:opacity-50"
+              >
+                Reply
               </button>
             </div>
+
+            {/* Replies List */}
+            {post.replies && post.replies.length > 0 && (
+              <div className="pl-4 border-l-2 border-forest/20 space-y-3 mb-4">
+                {post.replies.map((reply) => (
+                  <div key={reply.id}>
+                    <span className="text-sm font-medium text-forest">{reply.author_name}: </span>
+                    <span className="text-sm text-ink-soft">{reply.content}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Reply Input Box */}
+            {replyingTo === post.id && (
+              <div className="mt-4 flex gap-2">
+                <input
+                  type="text"
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder="Write a reply..."
+                  className="flex-1 bg-paper border-2 border-ink/20 p-2 text-sm focus:border-forest focus:outline-none text-ink"
+                  autoFocus
+                />
+                <Button size="sm" onClick={() => handleReplySubmit(post.id)}>
+                  Send
+                </Button>
+              </div>
+            )}
 
           </div>
         ))}
