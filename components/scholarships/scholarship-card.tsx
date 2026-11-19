@@ -1,14 +1,16 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Scholarship } from "@/lib/types";
+import { SaveButton } from "./save-button";
 
 export function ScholarshipCard({ scholarship }: { scholarship: Scholarship }) {
   return (
     <Card 
       className="flex flex-col shadow-none hover:-translate-y-1 transition-transform duration-200"
     >
-      <div className="mb-3">
+      <div className="flex justify-between items-start mb-3">
         <Badge tone="forest">{scholarship.level}</Badge>
+        <SaveButton scholarshipId={scholarship.id} />
       </div>
 
       <h3 className="text-xl text-ink leading-tight mt-1">

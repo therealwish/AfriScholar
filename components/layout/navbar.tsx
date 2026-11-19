@@ -1,8 +1,33 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { site } from "@/lib/site";
+import { supabase } from "@/lib/supabase";
 import { buttonStyles } from "@/components/ui/button";
+import { User } from "@supabase/supabase-js";
 
 export function Navbar() {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Check active sessions and sets the user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for changes on auth state (sign in, sign out, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-ink bg-paper">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
@@ -30,14 +55,30 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Call to Action */}
+        {/* Call to Action (Reactive to Auth State) */}
         <div className="flex items-center gap-4">
-          <Link href="/auth" className="text-sm font-semibold text-ink-soft hover:text-ink transition-colors">
-            Log in
-          </Link>
-          <Link href="/auth" className={buttonStyles("primary", "sm")}>
-            Join free
-          </Link>
+          {user ? (
+            <>
+              <Link href="/dashboard" className="text-sm font-semibold text-forest hover:text-forest-soft transition-colors">
+                Dashboard
+              </Link>
+              <button 
+                onClick={handleLogout}
+                className="text-sm font-semibold text-ink-soft hover:text-ink transition-colors"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/auth" className="text-sm font-semibold text-ink-soft hover:text-ink transition-colors">
+                Log in
+              </Link>
+              <Link href="/auth" className={buttonStyles("primary", "sm")}>
+                Join free
+              </Link>
+            </>
+          )}
         </div>
         
       </div>
