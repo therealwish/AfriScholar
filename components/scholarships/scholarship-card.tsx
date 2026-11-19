@@ -1,15 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-type Scholarship = {
-  id: string;
-  title: string;
-  institution: string;
-  location: string;
-  level: string;
-  deadline: string;
-  url: string;
-};
+import { Scholarship } from "@/lib/types";
 
 export function ScholarshipCard({ scholarship }: { scholarship: Scholarship }) {
   return (

@@ -1,4 +1,4 @@
-import { allScholarships } from "./data";
+import { Scholarship } from "./types";
 
 export type QuizAnswers = {
   degree: string;
@@ -13,13 +13,12 @@ export type QuizAnswers = {
   extraNote: string;
 };
 
-export function getMatchedScholarships(answers: QuizAnswers) {
-  // 1. Filter the 25 scholarships down to only what they are eligible for
-  const eligible = allScholarships.filter((scholarship) => {
+// We now pass the scholarships from the database into this function
+export function getMatchedScholarships(answers: QuizAnswers, databaseScholarships: Scholarship[]) {
+  const eligible = databaseScholarships.filter((scholarship) => {
     const userDegree = answers.degree.toLowerCase();
     const scholarshipLevel = scholarship.level.toLowerCase();
 
-    // Degree Match Logic
     const matchesDegree = 
       (userDegree === "undergraduate" && (scholarshipLevel.includes("undergrad") || scholarshipLevel === "any")) ||
       (userDegree === "master's" && (scholarshipLevel.includes("postgrad") || scholarshipLevel.includes("master") || scholarshipLevel === "any")) ||
@@ -28,11 +27,8 @@ export function getMatchedScholarships(answers: QuizAnswers) {
 
     if (!matchesDegree) return false;
 
-    // (Future logic: We can add region or grade filters here using the `answers` object)
-
-    return true; // If it passes all hard filters, keep it
+    return true; 
   });
 
-  // 2. Rank the eligible ones (For now, we just return them. AI will handle ranking later)
   return eligible;
 }

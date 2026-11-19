@@ -32,7 +32,7 @@ export function Navbar() {
 
         {/* Call to Action */}
         <div className="flex items-center gap-4">
-          <Link href="/auth" className="hidden text-sm font-semibold text-ink-soft hover:text-ink sm:block">
+          <Link href="/auth" className="text-sm font-semibold text-ink-soft hover:text-ink transition-colors">
             Log in
           </Link>
           <Link href="/auth" className={buttonStyles("primary", "sm")}>

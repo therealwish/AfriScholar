@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getMatchedScholarships } from "@/lib/matcher";
 import { ScholarshipCard } from "@/components/scholarships/scholarship-card";
-import { Scholarship } from "@/lib/data"; // Import the type
+import { Scholarship } from "@/lib/types"; // Updated import
 
 type QuizAnswers = {
   degree: string;
@@ -19,10 +19,10 @@ type QuizAnswers = {
   extraNote: string;
 };
 
-export function QuizForm() {
+// Added databaseScholarships prop
+export function QuizForm({ databaseScholarships }: { databaseScholarships: Scholarship[] }) {
   const [step, setStep] = useState(1);
   
-  // Replaced any[] with Scholarship[]
   const [results, setResults] = useState<Scholarship[]>([]);
   
   const [answers, setAnswers] = useState<QuizAnswers>({
@@ -183,7 +183,8 @@ export function QuizForm() {
           </Button>
           <Button 
             onClick={() => {
-              const matches = getMatchedScholarships(answers);
+              // Pass the database scholarships to the engine here
+              const matches = getMatchedScholarships(answers, databaseScholarships);
               setResults(matches);
               setStep(4); 
             }} 

@@ -49,7 +49,6 @@ export default function RootLayout({
         <main className="flex-1">
           {children}
         </main>
-        {/* The Footer must be inside the body, below the main content */}
         <Footer />
       </body>
     </html>

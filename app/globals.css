@@ -22,13 +22,13 @@
   --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 
-  /* --- Radii: Small, sharp, deliberate (No bubbly rounded-2xl) --- */
+  /* --- Radii: Small, sharp, deliberate --- */
   --radius-xs: 3px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
 
-  /* --- Shadows: Hard offset (Editorial style, not soft AI drop-shadows) --- */
+  /* --- Shadows: Hard offset (Editorial style) --- */
   --shadow-hard: 4px 4px 0 0 var(--color-ink);
   --shadow-hard-gold: 4px 4px 0 0 var(--color-gold);
   --shadow-hard-forest: 4px 4px 0 0 var(--color-forest);

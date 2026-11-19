@@ -1,11 +1,33 @@
-import { allGrants } from "@/lib/data";
+import { Suspense } from "react";
+import { supabase } from "@/lib/supabase";
 import { GrantCard } from "@/components/grants/grant-card";
+import { Grant } from "@/lib/types";
+
+async function GrantList() {
+  const { data: grants } = await supabase
+    .from("grants")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  return (
+    <div className="px-6 pt-12">
+      <div className="mx-auto max-w-5xl">
+        <p className="font-mono text-sm text-ink-faint uppercase mb-6">
+          Showing {grants?.length || 0} opportunities
+        </p>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {grants?.map((grant: Grant) => (
+            <GrantCard key={grant.id} grant={grant} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function GrantsPage() {
   return (
     <div className="bg-paper min-h-screen pb-20">
-      
-      {/* Page Header */}
       <div className="border-b-2 border-ink px-6 py-16 md:py-24 bg-paper-deep">
         <div className="mx-auto max-w-5xl">
           <h1 className="text-5xl md:text-7xl text-forest tracking-tight">
@@ -17,26 +39,13 @@ export default function GrantsPage() {
         </div>
       </div>
 
-      {/* Grant Grid */}
-      <div className="px-6 pt-12">
-        <div className="mx-auto max-w-5xl">
-          
-          <p className="font-mono text-sm text-ink-faint uppercase mb-6">
-            Showing {allGrants.length} opportunities
-          </p>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {allGrants.map((grant) => (
-              <GrantCard 
-                key={grant.id} 
-                grant={grant} 
-              />
-            ))}
-          </div>
-
+      <Suspense fallback={
+        <div className="px-6 pt-12 text-center text-ink-soft">
+          <p className="font-mono text-sm uppercase">Loading grants...</p>
         </div>
-      </div>
-
+      }>
+        <GrantList />
+      </Suspense>
     </div>
   );
 }
