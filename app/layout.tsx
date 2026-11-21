@@ -8,7 +8,8 @@ import { site } from "@/lib/site";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import "./globals.css";
-
+import { ServiceWorkerRegistration } from "@/components/service-worker";
+import { InstallPrompt } from "@/components/install-prompt";
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-bricolage",
@@ -50,6 +51,8 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <ServiceWorkerRegistration />
+        <InstallPrompt />
       </body>
     </html>
   );
