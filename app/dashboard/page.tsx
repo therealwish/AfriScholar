@@ -30,22 +30,24 @@ export default function DashboardPage() {
       
       setUser(session.user);
 
-      // 2. Fetch Saved Scholarships
-      const { data: savedData } = await supabase
+      // 2. Fetch the list of saved scholarship IDs for this user
+      const { data: savedIds } = await supabase
         .from("saved_scholarships")
-        .select(`
-          scholarship_id,
-          scholarships (*)
-        `)
+        .select("scholarship_id")
         .eq("user_id", session.user.id);
 
-      if (savedData) {
-        type SavedItem = { scholarships: Scholarship[] };
-        const extracted = savedData
-          .map((item: SavedItem) => item.scholarships[0])
-          .filter((s): s is Scholarship => !!s);
+      // 3. If they have saved items, fetch those specific scholarships
+      if (savedIds && savedIds.length > 0) {
+        const ids = savedIds.map(item => item.scholarship_id);
         
-        setSavedScholarships(extracted);
+        const { data: scholarships } = await supabase
+          .from("scholarships")
+          .select("*")
+          .in("id", ids); // Fetch only the ones in the ID list
+
+        if (scholarships) {
+          setSavedScholarships(scholarships);
+        }
       }
       
       setLoading(false);

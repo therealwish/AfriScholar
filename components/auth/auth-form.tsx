@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
-export function AuthForm() {
-  const [isLogin, setIsLogin] = useState(false);
+export function AuthForm({ initialMode = "signup" }: { initialMode?: "login" | "signup" }) {
+  // Set the initial state based on the URL parameter
+  const [isLogin, setIsLogin] = useState(initialMode === "login");
+  
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -132,8 +134,9 @@ export function AuthForm() {
           }}
           className="text-sm text-ink-soft hover:text-forest transition-colors underline underline-offset-4"
         >
+          {/* Using &apos; to prevent build errors */}
           {isLogin 
-            ? "Don't have an account? Sign up" 
+            ? "Don&apos;t have an account? Sign up" 
             : "Already have an account? Log in"}
         </button>
       </div>

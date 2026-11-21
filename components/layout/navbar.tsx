@@ -9,14 +9,13 @@ import { User } from "@supabase/supabase-js";
 
 export function Navbar() {
   const [user, setUser] = useState<User | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Check active sessions and sets the user
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
 
-    // Listen for changes on auth state (sign in, sign out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -26,6 +25,7 @@ export function Navbar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setIsMenuOpen(false);
   };
 
   return (
@@ -33,7 +33,7 @@ export function Navbar() {
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
         
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group" onClick={() => setIsMenuOpen(false)}>
           <div className="flex h-8 w-8 items-center justify-center rounded-xs bg-forest text-paper font-display font-bold text-lg group-hover:bg-forest-soft transition-colors">
             A
           </div>
@@ -55,33 +55,85 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Call to Action (Reactive to Auth State) */}
-        <div className="flex items-center gap-4">
+        {/* Desktop Auth */}
+        <div className="hidden md:flex items-center gap-4">
           {user ? (
             <>
               <Link href="/dashboard" className="text-sm font-semibold text-forest hover:text-forest-soft transition-colors">
                 Dashboard
               </Link>
-              <button 
-                onClick={handleLogout}
-                className="text-sm font-semibold text-ink-soft hover:text-ink transition-colors"
-              >
+              <button onClick={handleLogout} className="text-sm font-semibold text-ink-soft hover:text-ink transition-colors">
                 Log out
               </button>
             </>
           ) : (
             <>
-              <Link href="/auth" className="text-sm font-semibold text-ink-soft hover:text-ink transition-colors">
+              {/* UPDATED LINK HERE */}
+              <Link href="/auth?mode=login" className="text-sm font-semibold text-ink-soft hover:text-ink transition-colors">
                 Log in
               </Link>
-              <Link href="/auth" className={buttonStyles("primary", "sm")}>
+              {/* UPDATED LINK HERE */}
+              <Link href="/auth?mode=signup" className={buttonStyles("primary", "sm")}>
                 Join free
               </Link>
             </>
           )}
         </div>
-        
+
+        {/* Mobile Hamburger Button */}
+        <button 
+          className="md:hidden p-2 -mr-2 text-ink"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {isMenuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <div className="md:hidden border-t-2 border-ink bg-paper-deep px-6 py-4 space-y-4 flex flex-col">
+          {site.nav.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={() => setIsMenuOpen(false)}
+              className="text-lg font-semibold text-ink hover:text-forest transition-colors"
+            >
+              {item.label}
+            </Link>
+          ))}
+          <div className="border-t-2 border-ink/10 pt-4 flex flex-col gap-4">
+            {user ? (
+              <>
+                <Link href="/dashboard" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-forest">
+                  Dashboard
+                </Link>
+                <button onClick={handleLogout} className="text-left text-lg font-semibold text-ink-soft">
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                {/* UPDATED MOBILE LINK HERE */}
+                <Link href="/auth?mode=login" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-ink-soft">
+                  Log in
+                </Link>
+                {/* UPDATED MOBILE LINK HERE */}
+                <Link href="/auth?mode=signup" onClick={() => setIsMenuOpen(false)} className={buttonStyles("primary", "md", "w-full text-center")}>
+                  Join free
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

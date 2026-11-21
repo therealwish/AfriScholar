@@ -1,8 +1,20 @@
 import { AuthForm } from "@/components/auth/auth-form";
 
-export default function AuthPage() {
+export default async function AuthPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ mode?: string }> 
+}) {
+  // Read the mode from the URL (e.g., /auth?mode=login)
+  const { mode } = await searchParams;
+  
+  // If mode=login, show login. Otherwise, default to signup.
+  const initialMode = mode === "login" ? "login" : "signup";
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-paper">
+      
+      {/* Left Side: Bold Brand Statement */}
       <div className="hidden md:flex md:w-1/2 bg-forest p-12 lg:p-20 flex-col justify-between relative overflow-hidden">
         <div className="relative z-10">
           <h2 className="text-4xl lg:text-6xl text-paper leading-[1.05] tracking-tight">
@@ -12,15 +24,19 @@ export default function AuthPage() {
             It is being built right now by students, founders, and creators who refuse to give up.
           </p>
         </div>
+        
         <div className="relative z-10">
           <p className="font-mono text-sm text-gold uppercase tracking-widest">
             Learn. Build. Get funded.
           </p>
         </div>
       </div>
+
+      {/* Right Side: The Form */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12">
-        <AuthForm />
+        <AuthForm initialMode={initialMode} />
       </div>
+
     </div>
   );
 }

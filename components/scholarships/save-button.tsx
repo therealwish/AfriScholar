@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 export function SaveButton({ scholarshipId }: { scholarshipId: string }) {
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkSavedStatus = async () => {
@@ -15,15 +14,13 @@ export function SaveButton({ scholarshipId }: { scholarshipId: string }) {
         setLoading(false);
         return;
       }
-      
-      setUserId(session.user.id);
 
       const { data } = await supabase
         .from("saved_scholarships")
         .select("id")
         .eq("user_id", session.user.id)
         .eq("scholarship_id", scholarshipId)
-        .single();
+        .maybeSingle(); // Changed from .single() to prevent errors if 0 rows
 
       setIsSaved(!!data);
       setLoading(false);
@@ -33,25 +30,30 @@ export function SaveButton({ scholarshipId }: { scholarshipId: string }) {
   }, [scholarshipId]);
 
   const toggleSave = async () => {
-    if (!userId) {
+    setLoading(true);
+    // Fetch the session fresh on click
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.user) {
       alert("Please log in to save scholarships.");
+      setLoading(false);
       return;
     }
-
-    setLoading(true);
 
     if (isSaved) {
       await supabase
         .from("saved_scholarships")
         .delete()
-        .eq("user_id", userId)
+        .eq("user_id", session.user.id)
         .eq("scholarship_id", scholarshipId);
       setIsSaved(false);
     } else {
-      await supabase
+      const { error } = await supabase
         .from("saved_scholarships")
-        .insert([{ user_id: userId, scholarship_id: scholarshipId }]);
-      setIsSaved(true);
+        .insert([{ user_id: session.user.id, scholarship_id: scholarshipId }]);
+      
+      if (!error) setIsSaved(true);
+      else console.error(error);
     }
 
     setLoading(false);
