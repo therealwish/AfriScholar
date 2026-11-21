@@ -4,8 +4,8 @@ import { ScholarshipCard } from "@/components/scholarships/scholarship-card";
 import { buttonStyles } from "@/components/ui/button";
 import { Scholarship } from "@/lib/types";
 
-export async function FeaturedScholarships() {
-  // Fetch only featured scholarships, limited to 3
+// This is the async component that fetches the data
+async function FeaturedList() {
   const { data: scholarships } = await supabase
     .from("scholarships")
     .select("*")
@@ -14,6 +14,17 @@ export async function FeaturedScholarships() {
 
   if (!scholarships || scholarships.length === 0) return null;
 
+  return (
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {scholarships.map((item: Scholarship) => (
+        <ScholarshipCard key={item.id} scholarship={item} />
+      ))}
+    </div>
+  );
+}
+
+// This is the static shell that renders instantly
+export function FeaturedScholarships() {
   return (
     <section className="bg-paper-deep border-t-2 border-ink px-6 py-16">
       <div className="mx-auto max-w-5xl">
@@ -32,11 +43,9 @@ export async function FeaturedScholarships() {
           </Link>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {scholarships.map((item: Scholarship) => (
-            <ScholarshipCard key={item.id} scholarship={item} />
-          ))}
-        </div>
+        {/* The data-fetching part is wrapped in its own Suspense, 
+            even though we also wrapped it in page.tsx for extra safety. */}
+        <FeaturedList />
       </div>
     </section>
   );
