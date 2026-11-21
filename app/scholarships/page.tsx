@@ -5,9 +5,6 @@ import { ScholarshipCard } from "@/components/scholarships/scholarship-card";
 import { buttonStyles } from "@/components/ui/button";
 import { Scholarship } from "@/lib/types";
 
-// ADD THIS LINE:
-export const dynamic = "force-dynamic";
-
 async function ScholarshipList() {
   const { data: scholarships } = await supabase
     .from("scholarships")
