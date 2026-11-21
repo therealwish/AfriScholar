@@ -1,16 +1,6 @@
 import { AuthForm } from "@/components/auth/auth-form";
 
-export default async function AuthPage({ 
-  searchParams 
-}: { 
-  searchParams: Promise<{ mode?: string }> 
-}) {
-  // Read the mode from the URL (e.g., /auth?mode=login)
-  const { mode } = await searchParams;
-  
-  // If mode=login, show login. Otherwise, default to signup.
-  const initialMode = mode === "login" ? "login" : "signup";
-
+export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-paper">
       
@@ -34,7 +24,7 @@ export default async function AuthPage({
 
       {/* Right Side: The Form */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12">
-        <AuthForm initialMode={initialMode} />
+        <AuthForm />
       </div>
 
     </div>

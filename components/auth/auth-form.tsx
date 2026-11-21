@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
-export function AuthForm({ initialMode = "signup" }: { initialMode?: "login" | "signup" }) {
+// We wrap the inner form logic in a component because useSearchParams needs it
+function AuthFormContent() {
+  const searchParams = useSearchParams();
+  const mode = searchParams.get("mode");
+  
   // Set the initial state based on the URL parameter
-  const [isLogin, setIsLogin] = useState(initialMode === "login");
+  const [isLogin, setIsLogin] = useState(mode === "login");
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,37 +29,28 @@ export function AuthForm({ initialMode = "signup" }: { initialMode?: "login" | "
     setSuccess(null);
 
     if (isLogin) {
-      // Handle Login
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setError(error.message);
       } else {
         router.push("/dashboard");
-        router.refresh(); // Force the navbar to update immediately
+        router.refresh();
       }
     } else {
-      // Handle Sign Up
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: { full_name: name }, // Saves the name to the user profile
-        },
+        options: { data: { full_name: name } },
       });
 
       if (error) {
         setError(error.message);
       } else {
         setSuccess("Account created! Redirecting...");
-        // Redirect immediately since we turned off email confirmation
         setTimeout(() => {
           router.push("/dashboard");
           router.refresh();
-        }, 800); // 0.8 second delay just so they see the success message
+        }, 800);
       }
     }
     
@@ -76,8 +71,6 @@ export function AuthForm({ initialMode = "signup" }: { initialMode?: "login" | "
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 border-2 border-ink bg-paper p-8 shadow-none">
-        
-        {/* Error & Success Messages */}
         {error && <div className="bg-clay/10 text-clay border-2 border-clay p-3 text-sm">{error}</div>}
         {success && <div className="bg-forest/10 text-forest border-2 border-forest p-3 text-sm">{success}</div>}
 
@@ -134,12 +127,24 @@ export function AuthForm({ initialMode = "signup" }: { initialMode?: "login" | "
           }}
           className="text-sm text-ink-soft hover:text-forest transition-colors underline underline-offset-4"
         >
-          {/* Using &apos; to prevent build errors */}
           {isLogin 
-            ? "Don&apos;t have an account? Sign up" 
+            ? "Don't have an account? Sign up" 
             : "Already have an account? Log in"}
         </button>
       </div>
     </div>
+  );
+}
+
+// The main export wraps the content in Suspense to fix the Vercel build error
+export function AuthForm() {
+  return (
+    <Suspense fallback={
+      <div className="w-full max-w-md mx-auto text-center py-12">
+        <p className="font-mono text-sm uppercase text-ink-faint">Loading form...</p>
+      </div>
+    }>
+      <AuthFormContent />
+    </Suspense>
   );
 }
