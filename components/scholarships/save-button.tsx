@@ -9,19 +9,20 @@ export function SaveButton({ scholarshipId }: { scholarshipId: string }) {
 
   useEffect(() => {
     const checkSavedStatus = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         setLoading(false);
         return;
       }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("saved_scholarships")
         .select("id")
-        .eq("user_id", session.user.id)
+        .eq("user_id", user.id)
         .eq("scholarship_id", scholarshipId)
-        .maybeSingle(); // Changed from .single() to prevent errors if 0 rows
+        .maybeSingle();
 
+      if (error) console.error("Check status error:", error);
       setIsSaved(!!data);
       setLoading(false);
     };
@@ -31,29 +32,42 @@ export function SaveButton({ scholarshipId }: { scholarshipId: string }) {
 
   const toggleSave = async () => {
     setLoading(true);
-    // Fetch the session fresh on click
-    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!session?.user) {
-      alert("Please log in to save scholarships.");
+    // 1. Get the user directly to ensure we have a fresh ID
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      alert("You need to be logged in to save.");
       setLoading(false);
       return;
     }
 
     if (isSaved) {
-      await supabase
-        .from("saved_scholarships")
-        .delete()
-        .eq("user_id", session.user.id)
-        .eq("scholarship_id", scholarshipId);
-      setIsSaved(false);
-    } else {
+      // Handle Unsave
       const { error } = await supabase
         .from("saved_scholarships")
-        .insert([{ user_id: session.user.id, scholarship_id: scholarshipId }]);
+        .delete()
+        .eq("user_id", user.id)
+        .eq("scholarship_id", scholarshipId);
       
-      if (!error) setIsSaved(true);
-      else console.error(error);
+      if (error) {
+        alert("Error unsaving: " + error.message);
+      } else {
+        setIsSaved(false);
+      }
+    } else {
+      // Handle Save
+      const { error } = await supabase
+        .from("saved_scholarships")
+        .insert({ user_id: user.id, scholarship_id: scholarshipId });
+      
+      if (error) {
+        // This will pop up an alert on your screen so we can see the exact DB error
+        alert("Database Error: " + error.message);
+        console.error(error);
+      } else {
+        setIsSaved(true);
+      }
     }
 
     setLoading(false);
