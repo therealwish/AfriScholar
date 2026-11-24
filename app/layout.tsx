@@ -7,9 +7,11 @@ import {
 import { site } from "@/lib/site";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/service-worker";
 import { InstallPrompt } from "@/components/install-prompt";
+import { Analytics } from "@vercel/analytics/next"; // Added Vercel Analytics
+import "./globals.css";
+
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-bricolage",
@@ -53,6 +55,9 @@ export default function RootLayout({
         <Footer />
         <ServiceWorkerRegistration />
         <InstallPrompt />
+        
+        {/* Vercel Analytics Tracker */}
+        <Analytics />
       </body>
     </html>
   );
